@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>do.</title>
+    <head>
+    <meta charset="UTF-8">
+    <title>do.</title>
+    <style>
+        body {
+            font-family: 'Garamond', serif;
+            margin: 0;
+            background-color: #fafafa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin: 10px 0;
+            font-size: 48px;
+            text-align: center;
+        }
+
+        .top-section {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .quote, .purpose {
+            margin: 5px 0;
+            font-size: 18px;
+            /* Added for fade animations */
+            transition: opacity 1s ease-in-out;
+            opacity: 1;
+        }
+
+        .fade-out {
+            opacity: 0;
+        }
+
+        .fade-in {
+            opacity: 1;
+        }
+
+        .purpose {
+            cursor: text;
+        }
+
+        .main-section {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .task-columns {
+            width: 70%;
+            display: flex;
+            justify-content: space-between;
+            overflow: hidden;
+            padding-right: 10px;
+            box-sizing: border-box;
+        }
+
+        .column {
+            width: 32%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column h2 {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+
+        .task {
+            background-color: #fff;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            cursor: grab;
+            border-left: 5px solid #8bc34a; /* Default to small task color */
+        }
+
+        /* Priority Color Coding */
+        .task.low {
+            border-left-color: #8bc34a; /* Green */
+        }
+
+        .task.medium {
+            border-left-color: #ff9800; /* Orange */
+        }
+
+        .task.high {
+            border-left-color: #f44336; /* Red */
+        }
+
+        /* Active and Completed Task Coloring */
+        .task.active {
+            background-color: #e3f2fd; /* Light blue */
+        }
+
+        .task.completed {
+            background-color: #d0f0c0; /* Light green */
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-list.over {
+            border: 2px dashed #666;
+        }
+
+        .sidebar {
+            width: 30%;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .goals, .habit-streaks, .stats {
+            margin-bottom: 20px;
+        }
+
+        /* Auto-scrolling goals */
+        .goals-display {
+            overflow: hidden;
+            position: relative;
+            height: 24px;
+        }
+
+        .goals-display .goal-container {
+            display: flex;
+            position: absolute;
+            /* Removed fixed animation duration */
+            animation: scroll-goals linear infinite;
+        }
+
+        .goal-item {
+            margin-right: 50px;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-goals {
+            from {
+                transform: translateX(var(--goals-scroll-start));
+            }
+            to {
+                transform: translateX(var(--goals-scroll-end));
+            }
+        }
+
+        /* Auto-scrolling stats */
+        .stats-display {
+            overflow: hidden;
+            position: relative;
+            height: 24px;
+        }
+
+        .stats-display .stats-container {
+            display: flex;
+            position: absolute;
+            /* Removed fixed animation duration */
+            animation: scroll-stats linear infinite;
+        }
+
+        .stats-item {
+            margin-right: 50px;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-stats {
+            from {
+                transform: translateX(var(--stats-scroll-start));
+            }
+            to {
+                transform: translateX(var(--stats-scroll-end));
+            }
+        }
+
+        /* Habit Streaks Calendar */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day {
+            width: 20px;
+            height: 20px;
+            background-color: #e0e0e0;
+            text-align: center;
+            font-size: 12px;
+            line-height: 20px;
+        }
+
+        /* Different intensities of green based on completion percentage */
+        .calendar-day[data-completion="100"] {
+            background-color: #006400; /* Dark Green */
+            color: #fff;
+        }
+
+        .calendar-day[data-completion="75"] {
+            background-color: #228B22; /* Forest Green */
+            color: #fff;
+        }
+
+        .calendar-day[data-completion="50"] {
+            background-color: #32CD32; /* Lime Green */
+            color: #fff;
+        }
+
+        .calendar-day[data-completion="25"] {
+            background-color: #7CFC00; /* Lawn Green */
+            color: #fff;
+        }
+
+        /* Input Form at the bottom */
+        .input-form {
+            padding: 10px;
+            background-color: #fafafa;
+        }
+
+        .input-form textarea {
+            width: 100%;
+            height: 60px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            resize: none;
+            font-family: 'Garamond', serif;
+            padding-right: 10px;
+            box-sizing: border-box;
+        }
+
+        input, select, textarea, button {
+            font-family: 'Garamond', serif;
+        }
+
+        /* Minimalistic Input */
+        .minimal-input {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            padding: 5px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Garamond', serif;
+        }
+
+        /* Minimalistic Button */
+        .minimal-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .minimal-button:hover {
+            text-decoration: underline;
+        }
+
+        /* Task Edit Popup */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px; /* Could be more or less, depending on screen size */
+            font-family: 'Garamond', serif;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .goals-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .goals-list-item button {
+            margin-left: 10px;
+        }
+
+        /* CSS Variables for dynamic scrolling */
+        :root {
+            --goals-scroll-start: 100%;
+            --goals-scroll-end: -100%;
+            --stats-scroll-start: 100%;
+            --stats-scroll-end: -100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-section">
+        <h1>do.</h1>
+        <p class="quote" id="quote-text"></p>
+        <p class="purpose" id="vision-text" contenteditable="true" onblur="saveVision()">Your purpose here</p>
+    </div>
+
+    <div class="main-section">
+        <!-- Left: Task Columns -->
+        <div class="task-columns">
+            <div class="column">
+                <h2>To Do (<span id="todo-count">0</span>)</h2>
+                <ul class="task-list" id="todo-list">
+                    <!-- Tasks to do -->
+                </ul>
+            </div>
+            <div class="column">
+                <h2>Active (<span id="active-count">0</span>)</h2>
+                <ul class="task-list" id="active-list">
+                    <!-- Active tasks -->
+                </ul>
+            </div>
+            <div class="column">
+                <h2>Completed (<span id="completed-count">0</span>)</h2>
+                <ul class="task-list" id="completed-list">
+                    <!-- Completed tasks -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right: Goals, Habit Streaks, Fun Stats -->
+        <div class="sidebar">
+            <div class="goals">
+                <h3>Your Goals</h3>
+                <div class="goals-display" id="goals-display" onclick="openGoalsModal()">
+                    <!-- Auto-scrolling goals will be displayed here -->
+                    <div class="goal-container" id="goal-container">
+                        <!-- Individual goal items -->
+                    </div>
+                </div>
+                <input type="text" id="goal-input" class="minimal-input" placeholder="Enter timeframe and goal (e.g., 'Daily: Exercise')">
+                <!-- Process goals on Enter key press -->
+            </div>
+
+            <div class="habit-streaks">
+                <h3>Habit Streaks</h3>
+                <div class="calendar" id="habit-calendar">
+                    <!-- Calendar grid will be displayed here -->
+                </div>
+            </div>
+
+            <div class="stats">
+                <h3>Your Progress</h3>
+                <div class="stats-display" id="stats-display">
+                    <!-- Auto-scrolling stats will be displayed here -->
+                    <div class="stats-container" id="stats-container">
+                        <!-- Stats messages -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dump area at the bottom -->
+    <div class="input-form">
+        <!-- Dump tasks -->
+        <h3>Tasks</h3>
+        <textarea id="dump-tasks" placeholder="Enter tasks separated by new lines"></textarea>
+        <!-- Process tasks on Enter key press -->
+    </div>
+
+    <!-- Task Edit Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTaskModal()">&times;</span>
+            <h3>Edit Task</h3>
+            <input type="text" id="edit-task-title" class="minimal-input" placeholder="Task Title"><br>
+            <input type="date" id="edit-task-date" class="minimal-input"><br>
+            <select id="edit-task-priority" class="minimal-input">
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select><br>
+            <select id="edit-task-type" class="minimal-input">
+                <option value="task">Task</option>
+                <option value="appointment">Appointment</option>
+                <option value="habit">Habit</option>
+            </select><br>
+            <div class="modal-buttons">
+                <button class="minimal-button" onclick="saveTaskEdits()">Save Changes</button>
+                <button class="minimal-button" onclick="deleteTask(editingTaskId)">Delete Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals Management Modal -->
+    <div id="goals-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGoalsModal()">&times;</span>
+            <h3>Manage Goals</h3>
+            <ul id="goals-list">
+                <!-- Goals will be listed here with delete options -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sample quotes
+        const quotes = [
+            "Believe you can and you're halfway there. – Theodore Roosevelt",
+            "The future depends on what you do today. – Mahatma Gandhi",
+            "Don’t watch the clock; do what it does. Keep going. – Sam Levenson",
+            // Add more quotes as needed
+        ];
+
+        function getRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            return quotes[randomIndex];
+        }
+
+        // Function to get tailored quotes
+        function getTailoredQuote() {
+            // Use the user's purpose, goals, and tasks to generate a quote
+            const purpose = document.getElementById('vision-text').innerText;
+            const randomGoal = goals.length > 0 ? goals[Math.floor(Math.random() * goals.length)] : null;
+            const randomTask = tasks.length > 0 ? tasks[Math.floor(Math.random() * tasks.length)] : null;
+
+            const tailoredQuotes = [];
+
+            if (purpose && purpose !== 'Your purpose here') {
+                tailoredQuotes.push(`Remember, your purpose is "${purpose}". Keep it in mind.`);
+            }
+
+            if (randomGoal) {
+                tailoredQuotes.push(`Stay focused on your ${randomGoal.timeframe} goal: "${randomGoal.text}".`);
+            }
+
+            if (randomTask) {
+                tailoredQuotes.push(`Don't forget to ${randomTask.title}. You're making progress!`);
+            }
+
+            if (tailoredQuotes.length > 0) {
+                return tailoredQuotes[Math.floor(Math.random() * tailoredQuotes.length)];
+            } else {
+                // If no tailored quotes, return null
+                return null;
+            }
+        }
+
+        function updateQuote() {
+            const quoteElement = document.getElementById('quote-text');
+
+            // Fade out
+            quoteElement.classList.add('fade-out');
+
+            setTimeout(() => {
+                // Decide whether to use a tailored quote or a standard quote
+                let quote;
+                if (Math.random() < 0.5) { // 50% chance to use tailored quote
+                    quote = getTailoredQuote();
+                }
+
+                if (!quote) {
+                    // If no tailored quote or decided not to use, pick a random standard quote
+                    quote = getRandomQuote();
+                }
+
+                // Update the quote text
+                quoteElement.innerText = quote;
+
+                // Fade in
+                quoteElement.classList.remove('fade-out');
+                quoteElement.classList.add('fade-in');
+
+                // Remove fade-in class after animation
+                setTimeout(() => {
+                    quoteElement.classList.remove('fade-in');
+                }, 1000); // Assuming animation duration is 1s
+
+            }, 1000); // Match fade-out duration
+        }
+
+        // Initial quote setup
+        document.getElementById('quote-text').innerText = getRandomQuote();
+
+        // Update quote every minute
+        setInterval(updateQuote, 60000); // Update every 60 seconds
+
+        // Task management
+        let tasks = [];
+        let goals = [];
+
+        let editingTaskId = null;
+
+        // Load data from LocalStorage on page load
+        window.onload = function() {
+            loadData();
+        };
+
+        // Event listeners for Enter and Shift+Enter
+        document.getElementById('dump-tasks').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                processDumpedTasks();
+            }
+        });
+
+        document.getElementById('goal-input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addGoal();
+            }
+        });
+
+        function processDumpedTasks() {
+            const dumpedTasks = document.getElementById('dump-tasks').value;
+
+            if (!dumpedTasks) {
+                alert('Please enter tasks.');
+                return;
+            }
+
+            const taskLines = dumpedTasks.split('\n');
+
+            taskLines.forEach(line => {
+                const title = line.trim();
+                if (title) {
+                    // Simulate LLM processing to determine task attributes
+                    const task = simulateLLMProcessing(title);
+                    if (Array.isArray(task)) {
+                        tasks.push(...task);
+                    } else {
+                        tasks.push(task);
+                    }
+                }
+            });
+
+            saveData(); // Save tasks to LocalStorage
+            renderTasks();
+            document.getElementById('dump-tasks').value = '';
+        }
+
+        function simulateLLMProcessing(title) {
+            // For simplicity, we'll assign random attributes
+            const sizes = ['small', 'medium', 'large'];
+            const priorities = ['low', 'medium', 'high'];
+            const types = ['task', 'appointment', 'habit'];
+
+            const size = sizes[Math.floor(Math.random() * sizes.length)];
+            const priority = priorities[Math.floor(Math.random() * priorities.length)];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const date = new Date().toISOString().split('T')[0]; // Today's date
+
+            const task = {
+                id: Date.now() + Math.random(),
+                title,
+                description: '',
+                date,
+                priority,
+                size,
+                type,
+                status: 'todo' // Default status
+            };
+
+            // Auto-chunking for large tasks
+            if (size === 'large') {
+                return chunkLargeTask(task);
+            } else {
+                return task;
+            }
+        }
+
+        function chunkLargeTask(task) {
+            // Simulate chunking by splitting into smaller tasks
+            const chunkedTasks = [];
+            for (let i = 1; i <= 3; i++) {
+                chunkedTasks.push({
+                    ...task,
+                    id: Date.now() + Math.random(),
+                    title: `${task.title} - Part ${i}`,
+                    size: 'medium',
+                    status: 'todo'
+                });
+            }
+            return chunkedTasks;
+        }
+
+        function renderTasks() {
+            const todoList = document.getElementById('todo-list');
+            const activeList = document.getElementById('active-list');
+            const completedList = document.getElementById('completed-list');
+            const todoCount = document.getElementById('todo-count');
+            const activeCount = document.getElementById('active-count');
+            const completedCount = document.getElementById('completed-count');
+
+            todoList.innerHTML = '';
+            activeList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            let todoTasks = 0;
+            let activeTasks = 0;
+            let completedTasks = 0;
+
+            tasks.flat().forEach(task => {
+                const taskItem = document.createElement('li');
+                taskItem.className = `task ${task.size} ${task.priority}`;
+                taskItem.draggable = true;
+                taskItem.innerHTML = `
+                    <strong>${task.title}</strong><br>
+                    ${task.date ? 'Date: ' + task.date + '<br>' : ''}
+                    Priority: ${task.priority}<br>
+                    Type: ${task.type}
+                `;
+
+                // Apply color coding for active and completed tasks
+                if (task.status === 'active') {
+                    taskItem.classList.add('active');
+                } else if (task.status === 'completed') {
+                    taskItem.classList.add('completed');
+                }
+
+                // Drag and Drop Event Listeners
+                taskItem.addEventListener('dragstart', dragStart);
+                taskItem.addEventListener('dragend', dragEnd);
+                taskItem.dataset.id = task.id;
+
+                // Edit Task on Double Click
+                taskItem.addEventListener('dblclick', () => openTaskModal(task.id));
+
+                if (task.status === 'todo') {
+                    todoList.appendChild(taskItem);
+                    todoTasks++;
+                } else if (task.status === 'active') {
+                    activeList.appendChild(taskItem);
+                    activeTasks++;
+                } else if (task.status === 'completed') {
+                    completedList.appendChild(taskItem);
+                    completedTasks++;
+                }
+            });
+
+            todoCount.innerText = todoTasks;
+            activeCount.innerText = activeTasks;
+            completedCount.innerText = completedTasks;
+
+            updateHabitStreaks();
+            updateFunStats();
+        }
+
+        // Goals management
+        function addGoal() {
+            const goalText = document.getElementById('goal-input').value;
+
+            if (!goalText) {
+                alert('Please enter a goal.');
+                return;
+            }
+
+            // Parse timeframe and goal text
+            const [timeframe, ...goalArray] = goalText.split(':');
+            if (!goalArray.length) {
+                alert('Please enter a timeframe and a goal separated by a colon (e.g., "Daily: Exercise").');
+                return;
+            }
+            const goal = {
+                text: goalArray.join(':').trim(),
+                timeframe: timeframe.trim().toLowerCase()
+            };
+
+            goals.push(goal);
+            saveData(); // Save goals to LocalStorage
+            renderGoals();
+
+            document.getElementById('goal-input').value = '';
+        }
+
+        function renderGoals() {
+            const goalContainer = document.getElementById('goal-container');
+            goalContainer.innerHTML = '';
+
+            goals.forEach((goal) => {
+                const goalItem = document.createElement('span');
+                goalItem.innerText = `${capitalizeFirstLetter(goal.timeframe)} Goal: ${goal.text}`;
+                goalItem.classList.add('goal-item');
+                goalContainer.appendChild(goalItem);
+            });
+
+            // Calculate scrolling parameters
+            const goalDisplay = document.getElementById('goals-display');
+            const containerWidth = goalDisplay.offsetWidth;
+            const contentWidth = goalContainer.scrollWidth;
+
+            const totalScrollDistance = containerWidth + contentWidth;
+
+            // Set CSS variables
+            const root = document.documentElement;
+            root.style.setProperty('--goals-scroll-start', containerWidth + 'px');
+            root.style.setProperty('--goals-scroll-end', -contentWidth + 'px');
+
+            // Calculate duration based on speed
+            const speed = 30; // pixels per second
+            const duration = totalScrollDistance / speed;
+
+            // Set animation duration
+            goalContainer.style.animationDuration = duration + 's';
+        }
+
+        function openGoalsModal() {
+            const goalsList = document.getElementById('goals-list');
+            goalsList.innerHTML = '';
+
+            goals.forEach((goal, index) => {
+                const goalItem = document.createElement('li');
+                goalItem.classList.add('goals-list-item');
+                const goalText = document.createElement('span');
+                goalText.innerText = `${capitalizeFirstLetter(goal.timeframe)} Goal: ${goal.text}`;
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Delete';
+                deleteButton.className = 'minimal-button';
+                deleteButton.onclick = () => {
+                    deleteGoal(index);
+                    closeGoalsModal();
+                };
+                goalItem.appendChild(goalText);
+                goalItem.appendChild(deleteButton);
+                goalsList.appendChild(goalItem);
+            });
+
+            document.getElementById('goals-modal').style.display = 'block';
+        }
+
+        function closeGoalsModal() {
+            document.getElementById('goals-modal').style.display = 'none';
+        }
+
+        function deleteGoal(index) {
+            goals.splice(index, 1);
+            saveData(); // Save changes to LocalStorage
+            renderGoals();
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Vision and Purpose
+        function saveVision() {
+            const vision = document.getElementById('vision-text').innerText;
+            localStorage.setItem('vision', vision);
+        }
+
+        function loadVision() {
+            const vision = localStorage.getItem('vision');
+            if (vision) {
+                document.getElementById('vision-text').innerText = vision;
+            }
+        }
+
+        // Habit Streaks
+        function updateHabitStreaks() {
+            const habitCalendar = document.getElementById('habit-calendar');
+            habitCalendar.innerHTML = '';
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const habitTasks = tasks.filter(task => task.type === 'habit');
+
+            const habitDates = {};
+            for (let day = 1; day <= daysInMonth; day++) {
+                habitDates[day] = { total: 0, completed: 0 };
+            }
+
+            habitTasks.forEach(task => {
+                const taskDate = new Date(task.date).getDate();
+                if (habitDates[taskDate]) {
+                    habitDates[taskDate].total++;
+                    if (task.status === 'completed') {
+                        habitDates[taskDate].completed++;
+                    }
+                }
+            });
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                const habitData = habitDates[day];
+
+                if (habitData.total > 0) {
+                    const completionPercentage = (habitData.completed / habitData.total) * 100;
+
+                    if (completionPercentage === 100) {
+                        dayCell.dataset.completion = '100';
+                    } else if (completionPercentage >= 75) {
+                        dayCell.dataset.completion = '75';
+                    } else if (completionPercentage >= 50) {
+                        dayCell.dataset.completion = '50';
+                    } else if (completionPercentage >= 25) {
+                        dayCell.dataset.completion = '25';
+                    }
+                }
+
+                dayCell.innerText = day;
+                habitCalendar.appendChild(dayCell);
+            }
+        }
+
+        // Fun Task Statistics
+        function updateFunStats() {
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '';
+
+            const smallTasksCompleted = tasks.filter(task => task.size === 'small' && task.status === 'completed').length;
+            const mediumTasksCompleted = tasks.filter(task => task.size === 'medium' && task.status === 'completed').length;
+            const largeTasksCompleted = tasks.filter(task => task.size === 'large' && task.status === 'completed').length;
+
+            const habitTasks = tasks.filter(task => task.type === 'habit' && task.status === 'completed');
+            const habitNames = [...new Set(habitTasks.map(task => task.title))];
+
+            // Calculate habit streaks
+            const habitStreaks = {};
+            habitNames.forEach(habitName => {
+                let streak = 0;
+                let maxStreak = 0;
+                const sortedTasks = tasks.filter(task => task.title === habitName && task.status === 'completed')
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+                let lastDate = null;
+                sortedTasks.forEach(task => {
+                    const currentDate = new Date(task.date);
+                    if (lastDate) {
+                        const diff = (currentDate - lastDate) / (1000 * 60 * 60 * 24);
+                        if (diff === 1) {
+                            streak++;
+                        } else {
+                            streak = 1;
+                        }
+                    } else {
+                        streak = 1;
+                    }
+                    if (streak > maxStreak) {
+                        maxStreak = streak;
+                    }
+                    lastDate = currentDate;
+                });
+                habitStreaks[habitName] = maxStreak;
+            });
+
+            const statsMessages = [
+                `You've completed ${largeTasksCompleted} big tasks, ${mediumTasksCompleted} medium tasks, and ${smallTasksCompleted} small tasks.`,
+                ...Object.entries(habitStreaks).map(([habit, streak]) => `Your longest streak for ${habit} is ${streak} days! Keep it up!`)
+            ];
+
+            statsMessages.forEach(message => {
+                const statItem = document.createElement('span');
+                statItem.innerText = message;
+                statItem.classList.add('stats-item');
+                statsContainer.appendChild(statItem);
+            });
+
+            // Calculate scrolling parameters
+            const statsDisplay = document.getElementById('stats-display');
+            const containerWidth = statsDisplay.offsetWidth;
+            const contentWidth = statsContainer.scrollWidth;
+
+            const totalScrollDistance = containerWidth + contentWidth;
+
+            // Set CSS variables
+            const root = document.documentElement;
+            root.style.setProperty('--stats-scroll-start', containerWidth + 'px');
+            root.style.setProperty('--stats-scroll-end', -contentWidth + 'px');
+
+            // Calculate duration based on speed
+            const speed = 50; // pixels per second
+            const duration = totalScrollDistance / speed;
+
+            // Set animation duration
+            statsContainer.style.animationDuration = duration + 's';
+        }
+
+        // Drag and Drop Functions
+        let draggedTaskId = null;
+
+        function dragStart(event) {
+            draggedTaskId = event.target.dataset.id;
+            event.target.style.opacity = 0.5;
+        }
+
+        function dragEnd(event) {
+            event.target.style.opacity = "";
+        }
+
+        const columns = document.querySelectorAll('.task-list');
+        columns.forEach(column => {
+            column.addEventListener('dragover', dragOver);
+            column.addEventListener('dragenter', dragEnter);
+            column.addEventListener('dragleave', dragLeave);
+            column.addEventListener('drop', drop);
+        });
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function dragEnter(event) {
+            event.preventDefault();
+            event.target.classList.add('over');
+        }
+
+        function dragLeave(event) {
+            event.target.classList.remove('over');
+        }
+
+        function drop(event) {
+            event.target.classList.remove('over');
+            const columnId = event.target.id;
+
+            const task = tasks.flat().find(t => t.id == draggedTaskId);
+
+            if (columnId === 'todo-list') {
+                updateTaskStatus(task, 'todo');
+            } else if (columnId === 'active-list') {
+                updateTaskStatus(task, 'active');
+            } else if (columnId === 'completed-list') {
+                updateTaskStatus(task, 'completed');
+            }
+
+            saveData(); // Save tasks to LocalStorage
+            renderTasks();
+        }
+
+        function updateTaskStatus(task, newStatus) {
+            task.status = newStatus;
+        }
+
+        // Task Editing
+        function openTaskModal(taskId) {
+            editingTaskId = taskId;
+            const task = tasks.flat().find(t => t.id == taskId);
+
+            document.getElementById('edit-task-title').value = task.title;
+            document.getElementById('edit-task-date').value = task.date;
+            document.getElementById('edit-task-priority').value = task.priority;
+            document.getElementById('edit-task-type').value = task.type;
+
+            document.getElementById('task-modal').style.display = 'block';
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').style.display = 'none';
+            editingTaskId = null;
+        }
+
+        function saveTaskEdits() {
+            const task = tasks.flat().find(t => t.id == editingTaskId);
+
+            task.title = document.getElementById('edit-task-title').value;
+            task.date = document.getElementById('edit-task-date').value;
+            task.priority = document.getElementById('edit-task-priority').value;
+            task.type = document.getElementById('edit-task-type').value;
+
+            saveData(); // Save tasks to LocalStorage
+            closeTaskModal();
+            renderTasks();
+        }
+
+        function deleteTask(taskId) {
+            tasks = tasks.filter(task => task.id !== taskId);
+            saveData(); // Save tasks to LocalStorage
+            closeTaskModal();
+            renderTasks();
+        }
+
+        // Close the modals when clicking outside of them
+        window.onclick = function(event) {
+            const taskModal = document.getElementById('task-modal');
+            const goalsModal = document.getElementById('goals-modal');
+            if (event.target == taskModal) {
+                closeTaskModal();
+            }
+            if (event.target == goalsModal) {
+                closeGoalsModal();
+            }
+        }
+
+        // LocalStorage Functions
+        function saveData() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('goals', JSON.stringify(goals));
+        }
+
+        function loadData() {
+            const storedTasks = localStorage.getItem('tasks');
+            const storedGoals = localStorage.getItem('goals');
+
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+            }
+
+            if (storedGoals) {
+                goals = JSON.parse(storedGoals);
+            }
+
+            loadVision();
+            renderTasks();
+            renderGoals();
+        }
+
+        // Initial rendering
+        // Moved to loadData() function to ensure data is loaded before rendering
+        // renderTasks();
+
+    </script>
+
+</body>
+</html>
