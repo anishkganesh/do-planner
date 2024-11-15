@@ -76,7 +76,6 @@
             overflow: hidden;
             padding: 0 10px;
             box-sizing: border-box;
-            align-items: stretch;
         }
 
         .task-columns {
@@ -86,14 +85,6 @@
             overflow: hidden;
             padding-right: 10px;
             box-sizing: border-box;
-            flex-shrink: 0;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .task-columns .columns-wrapper {
-            display: flex;
-            flex: 1;
         }
 
         .column {
@@ -171,8 +162,7 @@
             flex-direction: column;
             justify-content: flex-start;
             overflow-y: auto;
-            flex-shrink: 0;
-            height: 100%;
+            max-height: 100%;
         }
 
         .goals, .habit-streaks, .stats {
@@ -447,7 +437,6 @@
                 width: 100%;
                 margin-top: 20px;
                 max-height: none;
-                height: auto;
             }
             .main-section {
                 flex-direction: column;
@@ -455,7 +444,6 @@
             .task-columns {
                 width: 100%;
                 padding-right: 0;
-                height: auto;
             }
         }
 
@@ -487,25 +475,23 @@
     <div class="main-section">
         <!-- Left: Task Columns -->
         <div class="task-columns">
-            <div class="columns-wrapper">
-                <div class="column">
-                    <h2>To Do (<span id="todo-count">0</span>)</h2>
-                    <ul class="task-list" id="todo-list">
-                        <!-- Tasks to do -->
-                    </ul>
-                </div>
-                <div class="column">
-                    <h2>Active (<span id="active-count">0</span>)</h2>
-                    <ul class="task-list" id="active-list">
-                        <!-- Active tasks -->
-                    </ul>
-                </div>
-                <div class="column">
-                    <h2>Completed (<span id="completed-count">0</span>)</h2>
-                    <ul class="task-list" id="completed-list">
-                        <!-- Completed tasks -->
-                    </ul>
-                </div>
+            <div class="column">
+                <h2>To Do (<span id="todo-count">0</span>)</h2>
+                <ul class="task-list" id="todo-list">
+                    <!-- Tasks to do -->
+                </ul>
+            </div>
+            <div class="column">
+                <h2>Active (<span id="active-count">0</span>)</h2>
+                <ul class="task-list" id="active-list">
+                    <!-- Active tasks -->
+                </ul>
+            </div>
+            <div class="column">
+                <h2>Completed (<span id="completed-count">0</span>)</h2>
+                <ul class="task-list" id="completed-list">
+                    <!-- Completed tasks -->
+                </ul>
             </div>
         </div>
 
