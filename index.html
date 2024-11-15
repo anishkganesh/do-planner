@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>do.</title>
-    <!-- Added minimalistic favicon -->
+    <!-- Minimalistic favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHRleHQgeD0iNSIgeT0iNTAiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IiMwMDAiPmRvLjwvdGV4dD48L3N2Zz4=">
     <style>
         body {
@@ -17,6 +17,26 @@
             overflow: hidden;
             padding: 10px;
             box-sizing: border-box;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
         }
 
         h1 {
@@ -34,7 +54,6 @@
         .quote, .purpose {
             margin: 5px 0;
             font-size: 18px;
-            /* Added for fade animations */
             transition: opacity 1s ease-in-out;
             opacity: 1;
         }
@@ -57,6 +76,7 @@
             overflow: hidden;
             padding: 0 10px;
             box-sizing: border-box;
+            align-items: stretch;
         }
 
         .task-columns {
@@ -66,6 +86,14 @@
             overflow: hidden;
             padding-right: 10px;
             box-sizing: border-box;
+            flex-shrink: 0;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .task-columns .columns-wrapper {
+            display: flex;
+            flex: 1;
         }
 
         .column {
@@ -99,29 +127,33 @@
             margin: 5px;
             border: 1px solid #ddd;
             cursor: grab;
-            border-left: 5px solid #8bc34a; /* Default to small task color */
+            border-left: 5px solid #8bc34a;
+        }
+
+        .dragging {
+            opacity: 0.5;
         }
 
         /* Priority Color Coding */
         .task.low {
-            border-left-color: #8bc34a; /* Green */
+            border-left-color: #8bc34a;
         }
 
         .task.medium {
-            border-left-color: #ff9800; /* Orange */
+            border-left-color: #ff9800;
         }
 
         .task.high {
-            border-left-color: #f44336; /* Red */
+            border-left-color: #f44336;
         }
 
         /* Active and Completed Task Coloring */
         .task.active {
-            background-color: #e3f2fd; /* Light blue */
+            background-color: #e3f2fd;
         }
 
         .task.completed {
-            background-color: #d0f0c0; /* Light green */
+            background-color: #d0f0c0;
             text-decoration: line-through;
             color: #999;
         }
@@ -130,13 +162,17 @@
             border: 2px dashed #666;
         }
 
+        /* Updated Sidebar CSS */
         .sidebar {
             width: 30%;
             padding: 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
+            overflow-y: auto;
+            flex-shrink: 0;
+            height: 100%;
         }
 
         .goals, .habit-streaks, .stats {
@@ -148,13 +184,14 @@
             overflow: hidden;
             position: relative;
             height: 24px;
+            width: 100%;
         }
 
         .goals-display .goal-container {
             display: flex;
             position: absolute;
-            /* Removed fixed animation duration */
             animation: scroll-goals linear infinite;
+            white-space: nowrap;
         }
 
         .goal-item {
@@ -176,13 +213,14 @@
             overflow: hidden;
             position: relative;
             height: 24px;
+            width: 100%;
         }
 
         .stats-display .stats-container {
             display: flex;
             position: absolute;
-            /* Removed fixed animation duration */
             animation: scroll-stats linear infinite;
+            white-space: nowrap;
         }
 
         .stats-item {
@@ -217,22 +255,22 @@
 
         /* Different intensities of green based on completion percentage */
         .calendar-day[data-completion="100"] {
-            background-color: #006400; /* Dark Green */
+            background-color: #006400;
             color: #fff;
         }
 
         .calendar-day[data-completion="75"] {
-            background-color: #228B22; /* Forest Green */
+            background-color: #228B22;
             color: #fff;
         }
 
         .calendar-day[data-completion="50"] {
-            background-color: #32CD32; /* Lime Green */
+            background-color: #32CD32;
             color: #fff;
         }
 
         .calendar-day[data-completion="25"] {
-            background-color: #7CFC00; /* Lawn Green */
+            background-color: #7CFC00;
             color: #fff;
         }
 
@@ -275,6 +313,7 @@
             cursor: pointer;
             font-size: 16px;
             padding: 0;
+            color: inherit;
         }
 
         .minimal-button:hover {
@@ -283,29 +322,32 @@
 
         /* Task Edit Popup */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 10;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
         }
 
         .modal-content {
             background-color: #fff;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 300px; /* Could be more or less, depending on screen size */
+            width: 300px;
             font-family: 'Garamond', serif;
+            position: relative;
         }
 
         .close {
             color: #aaa;
-            float: right;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
@@ -341,12 +383,103 @@
             --stats-scroll-end: -100%;
         }
 
+        /* Authentication Buttons */
+        #auth-buttons {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        #auth-buttons button {
+            margin-left: 10px;
+        }
+
+        #logout-button {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: none;
+        }
+
+        /* Error Message Styling */
+        .error-message, .success-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .success-message {
+            color: green;
+        }
+
+        /* Share Modal */
+        #share-modal .modal-content {
+            width: 400px;
+        }
+
+        /* Adjusted spacing for buttons */
+        .backup-import {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        /* Exit Shared do. Button */
+        #exit-shared-do-button {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            display: none;
+        }
+
+        /* Share Error Message */
+        #share-error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Responsive Sidebar */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 100%;
+                margin-top: 20px;
+                max-height: none;
+                height: auto;
+            }
+            .main-section {
+                flex-direction: column;
+            }
+            .task-columns {
+                width: 100%;
+                padding-right: 0;
+                height: auto;
+            }
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="top-section">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
         <h1>do.</h1>
+    </div>
+
+    <!-- Authentication Buttons -->
+    <div id="auth-buttons">
+        <button id="login-button" class="minimal-button" onclick="openLoginModal()">Login</button>
+        <button id="register-button" class="minimal-button" onclick="openRegisterModal()">Register</button>
+    </div>
+    <button id="logout-button" class="minimal-button" onclick="logout()">Logout</button>
+
+    <!-- Exit Shared do. Button -->
+    <button id="exit-shared-do-button" class="minimal-button" onclick="exitSharedDo()">Exit Shared do.</button>
+
+    <div class="top-section">
+        <h1 id="page-title">do.</h1>
         <p class="quote" id="quote-text"></p>
         <p class="purpose" id="vision-text" contenteditable="true" onblur="saveVision()">Your purpose here</p>
     </div>
@@ -354,23 +487,25 @@
     <div class="main-section">
         <!-- Left: Task Columns -->
         <div class="task-columns">
-            <div class="column">
-                <h2>To Do (<span id="todo-count">0</span>)</h2>
-                <ul class="task-list" id="todo-list">
-                    <!-- Tasks to do -->
-                </ul>
-            </div>
-            <div class="column">
-                <h2>Active (<span id="active-count">0</span>)</h2>
-                <ul class="task-list" id="active-list">
-                    <!-- Active tasks -->
-                </ul>
-            </div>
-            <div class="column">
-                <h2>Completed (<span id="completed-count">0</span>)</h2>
-                <ul class="task-list" id="completed-list">
-                    <!-- Completed tasks -->
-                </ul>
+            <div class="columns-wrapper">
+                <div class="column">
+                    <h2>To Do (<span id="todo-count">0</span>)</h2>
+                    <ul class="task-list" id="todo-list">
+                        <!-- Tasks to do -->
+                    </ul>
+                </div>
+                <div class="column">
+                    <h2>Active (<span id="active-count">0</span>)</h2>
+                    <ul class="task-list" id="active-list">
+                        <!-- Active tasks -->
+                    </ul>
+                </div>
+                <div class="column">
+                    <h2>Completed (<span id="completed-count">0</span>)</h2>
+                    <ul class="task-list" id="completed-list">
+                        <!-- Completed tasks -->
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -385,7 +520,6 @@
                     </div>
                 </div>
                 <input type="text" id="goal-input" class="minimal-input" placeholder="Enter timeframe and goal (e.g., 'Daily: Exercise')">
-                <!-- Process goals on Enter key press -->
             </div>
 
             <div class="habit-streaks">
@@ -405,11 +539,12 @@
                 </div>
             </div>
 
-            <!-- Backup and Import Buttons -->
+            <!-- Backup, Import, and Share Buttons -->
             <div class="backup-import">
                 <button class="minimal-button" onclick="exportData()">Export Data</button>
                 <button class="minimal-button" onclick="document.getElementById('import-file').click()">Import Data</button>
                 <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
+                <button class="minimal-button" onclick="openShareModal()">Share do.</button>
             </div>
         </div>
     </div>
@@ -419,7 +554,6 @@
         <!-- Dump tasks -->
         <h3>Tasks</h3>
         <textarea id="dump-tasks" placeholder="Enter tasks separated by new lines"></textarea>
-        <!-- Process tasks on Enter key press -->
     </div>
 
     <!-- Task Edit Modal -->
@@ -457,13 +591,98 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h3>Login</h3>
+            <input type="text" id="login-username" class="minimal-input" placeholder="Username"><br>
+            <input type="password" id="login-password" class="minimal-input" placeholder="Password"><br>
+            <div class="error-message" id="login-error-message"></div>
+            <div class="modal-buttons">
+                <button class="minimal-button" onclick="login()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegisterModal()">&times;</span>
+            <h3>Register</h3>
+            <input type="text" id="register-username" class="minimal-input" placeholder="Username"><br>
+            <input type="email" id="register-email" class="minimal-input" placeholder="Email"><br>
+            <input type="password" id="register-password" class="minimal-input" placeholder="Password"><br>
+            <div class="error-message" id="register-error-message"></div>
+            <div class="modal-buttons">
+                <button class="minimal-button" onclick="register()">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Verification Modal -->
+    <div id="verification-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeVerificationModal()">&times;</span>
+            <h3>Email Verification</h3>
+            <p>We've sent a verification code to your email. Please enter it below:</p>
+            <!-- Display the code inline for simulation -->
+            <p>Your verification code is: <span id="displayed-verification-code"></span></p>
+            <input type="text" id="verification-code-input" class="minimal-input" placeholder="Verification Code"><br>
+            <div class="error-message" id="verification-error-message"></div>
+            <div class="modal-buttons">
+                <button class="minimal-button" onclick="verifyEmail()">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeShareModal()">&times;</span>
+            <h3>Share do.</h3>
+            <div id="share-section">
+                <p>Enter the username of the person you want to share with:</p>
+                <input type="text" id="share-username" class="minimal-input" placeholder="Username"><br>
+                <div class="error-message" id="share-error-message"></div>
+                <div class="success-message" id="share-success-message"></div>
+                <div class="modal-buttons">
+                    <button class="minimal-button" onclick="shareDo()">Share</button>
+                </div>
+            </div>
+            <hr>
+            <h3>do.s Shared with You</h3>
+            <div id="shared-with-you-section">
+                <ul id="shared-with-you-list">
+                    <!-- List of do.s shared with you will go here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Sample quotes
         const quotes = [
             "Believe you can and you're halfway there. – Theodore Roosevelt",
             "The future depends on what you do today. – Mahatma Gandhi",
             "Don’t watch the clock; do what it does. Keep going. – Sam Levenson",
-            // Add more quotes as needed
+            "Success is not final, failure is not fatal: It is the courage to continue that counts. – Winston Churchill",
+            "Hardships often prepare ordinary people for an extraordinary destiny. – C.S. Lewis",
+            "The only way to do great work is to love what you do. – Steve Jobs",
+            "If you can dream it, you can achieve it. – Zig Ziglar",
+            "Don’t limit your challenges. Challenge your limits.",
+            "The secret of getting ahead is getting started. – Mark Twain",
+            "It always seems impossible until it's done. – Nelson Mandela",
+            "Your only limit is your mind.",
+            "Dream big and dare to fail.",
+            "The harder you work for something, the greater you'll feel when you achieve it.",
+            "Don’t stop when you're tired. Stop when you're done.",
+            "Do something today that your future self will thank you for.",
+            "Little things make big days.",
+            "It’s going to be hard, but hard does not mean impossible.",
+            "Don’t wait for opportunity. Create it.",
+            "Sometimes we’re tested not to show our weaknesses, but to discover our strengths.",
+            "The key to success is to focus on goals, not obstacles."
         ];
 
         function getRandomQuote() {
@@ -473,7 +692,6 @@
 
         // Function to get tailored quotes
         function getTailoredQuote() {
-            // Use the user's purpose, goals, and tasks to generate a quote
             const purpose = document.getElementById('vision-text').innerText;
             const randomGoal = goals.length > 0 ? goals[Math.floor(Math.random() * goals.length)] : null;
             const randomTask = tasks.length > 0 ? tasks[Math.floor(Math.random() * tasks.length)] : null;
@@ -482,20 +700,25 @@
 
             if (purpose && purpose !== 'Your purpose here') {
                 tailoredQuotes.push(`Remember, your purpose is "${purpose}". Keep it in mind.`);
+                tailoredQuotes.push(`Your vision "${purpose}" is within reach.`);
+                tailoredQuotes.push(`Stay aligned with your purpose: "${purpose}".`);
             }
 
             if (randomGoal) {
                 tailoredQuotes.push(`Stay focused on your ${randomGoal.timeframe} goal: "${randomGoal.text}".`);
+                tailoredQuotes.push(`Every step counts towards "${randomGoal.text}".`);
+                tailoredQuotes.push(`Your goal "${randomGoal.text}" awaits your action.`);
             }
 
             if (randomTask) {
                 tailoredQuotes.push(`Don't forget to ${randomTask.title}. You're making progress!`);
+                tailoredQuotes.push(`"${randomTask.title}" is a step closer to success.`);
+                tailoredQuotes.push(`Keep pushing on "${randomTask.title}".`);
             }
 
             if (tailoredQuotes.length > 0) {
                 return tailoredQuotes[Math.floor(Math.random() * tailoredQuotes.length)];
             } else {
-                // If no tailored quotes, return null
                 return null;
             }
         }
@@ -507,14 +730,12 @@
             quoteElement.classList.add('fade-out');
 
             setTimeout(() => {
-                // Decide whether to use a tailored quote or a standard quote
                 let quote;
-                if (Math.random() < 0.5) { // 50% chance to use tailored quote
+                if (Math.random() < 0.5) {
                     quote = getTailoredQuote();
                 }
 
                 if (!quote) {
-                    // If no tailored quote or decided not to use, pick a random standard quote
                     quote = getRandomQuote();
                 }
 
@@ -528,42 +749,91 @@
                 // Remove fade-in class after animation
                 setTimeout(() => {
                     quoteElement.classList.remove('fade-in');
-                }, 1000); // Assuming animation duration is 1s
+                }, 1000);
 
-            }, 1000); // Match fade-out duration
+            }, 1000);
         }
 
         // Initial quote setup
         document.getElementById('quote-text').innerText = getRandomQuote();
 
         // Update quote every minute
-        setInterval(updateQuote, 60000); // Update every 60 seconds
+        setInterval(updateQuote, 60000);
 
         // Task management
         let tasks = [];
         let goals = [];
 
         let editingTaskId = null;
+        let currentUser = null;
+        let verificationCode = null;
+        let pendingUser = null;
+        let viewingSharedDo = false;
+        let viewedUser = null;
 
         // Load data from LocalStorage on page load
         window.onload = function() {
-            loadData();
+            checkAuthStatus();
+
+            // Minimalistic loading screen
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('fade-out');
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 500);
+            }, 500);
+
+            // Event listeners for Enter and Shift+Enter
+            document.getElementById('dump-tasks').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    processDumpedTasks();
+                }
+            });
+
+            document.getElementById('goal-input').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    addGoal();
+                }
+            });
+
+            // Enter key submits login form
+            document.getElementById('login-modal').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && document.getElementById('login-modal').style.display === 'block') {
+                    e.preventDefault();
+                    login();
+                }
+            });
+
+            // Enter key submits registration form
+            document.getElementById('register-modal').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && document.getElementById('register-modal').style.display === 'block') {
+                    e.preventDefault();
+                    register();
+                }
+            });
+
+            // Enter key submits verification code
+            document.getElementById('verification-modal').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && document.getElementById('verification-modal').style.display === 'block') {
+                    e.preventDefault();
+                    verifyEmail();
+                }
+            });
+
+            // Escape key closes modals
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeTaskModal();
+                    closeGoalsModal();
+                    closeLoginModal();
+                    closeRegisterModal();
+                    closeVerificationModal();
+                    closeShareModal();
+                }
+            });
         };
-
-        // Event listeners for Enter and Shift+Enter
-        document.getElementById('dump-tasks').addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                processDumpedTasks();
-            }
-        });
-
-        document.getElementById('goal-input').addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                addGoal();
-            }
-        });
 
         function processDumpedTasks() {
             const dumpedTasks = document.getElementById('dump-tasks').value;
@@ -578,7 +848,6 @@
             taskLines.forEach(line => {
                 const title = line.trim();
                 if (title) {
-                    // Simulate LLM processing to determine task attributes
                     const task = simulateLLMProcessing(title);
                     if (Array.isArray(task)) {
                         tasks.push(...task);
@@ -594,7 +863,6 @@
         }
 
         function simulateLLMProcessing(title) {
-            // For simplicity, we'll assign random attributes
             const sizes = ['small', 'medium', 'large'];
             const priorities = ['low', 'medium', 'high'];
             const types = ['task', 'appointment', 'habit'];
@@ -615,7 +883,6 @@
                 status: 'todo' // Default status
             };
 
-            // Auto-chunking for large tasks
             if (size === 'large') {
                 return chunkLargeTask(task);
             } else {
@@ -624,7 +891,6 @@
         }
 
         function chunkLargeTask(task) {
-            // Simulate chunking by splitting into smaller tasks
             const chunkedTasks = [];
             for (let i = 1; i <= 3; i++) {
                 chunkedTasks.push({
@@ -654,31 +920,34 @@
             let activeTasks = 0;
             let completedTasks = 0;
 
-            tasks.flat().forEach(task => {
+            tasks.forEach(task => {
                 const taskItem = document.createElement('li');
                 taskItem.className = `task ${task.size} ${task.priority}`;
-                taskItem.draggable = true;
+                taskItem.draggable = !viewingSharedDo;
                 taskItem.innerHTML = `
                     <strong>${task.title}</strong><br>
                     ${task.date ? 'Date: ' + task.date + '<br>' : ''}
                     Priority: ${task.priority}<br>
                     Type: ${task.type}
                 `;
+                taskItem.dataset.id = task.id;
 
-                // Apply color coding for active and completed tasks
                 if (task.status === 'active') {
                     taskItem.classList.add('active');
                 } else if (task.status === 'completed') {
                     taskItem.classList.add('completed');
                 }
 
-                // Drag and Drop Event Listeners
-                taskItem.addEventListener('dragstart', dragStart);
-                taskItem.addEventListener('dragend', dragEnd);
-                taskItem.dataset.id = task.id;
+                if (!viewingSharedDo) {
+                    // Drag and Drop Event Listeners
+                    taskItem.addEventListener('dragstart', handleDragStart);
+                    taskItem.addEventListener('dragend', handleDragEnd);
+                }
 
                 // Edit Task on Double Click
-                taskItem.addEventListener('dblclick', () => openTaskModal(task.id));
+                if (!viewingSharedDo) {
+                    taskItem.addEventListener('dblclick', () => openTaskModal(task.id));
+                }
 
                 if (task.status === 'todo') {
                     todoList.appendChild(taskItem);
@@ -700,6 +969,56 @@
             updateFunStats();
         }
 
+        // Drag-and-Drop Functions
+        let draggedTaskId = null;
+
+        function handleDragStart(e) {
+            draggedTaskId = e.target.dataset.id;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        const lists = document.querySelectorAll('.task-list');
+        lists.forEach(list => {
+            list.addEventListener('dragover', handleDragOver);
+            list.addEventListener('drop', handleDrop);
+            list.addEventListener('dragenter', handleDragEnter);
+            list.addEventListener('dragleave', handleDragLeave);
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.currentTarget.classList.add('over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('over');
+        }
+
+        function handleDrop(e) {
+            e.currentTarget.classList.remove('over');
+            const list = e.currentTarget;
+            const task = tasks.find(t => t.id == draggedTaskId);
+
+            if (list.id === 'todo-list') {
+                task.status = 'todo';
+            } else if (list.id === 'active-list') {
+                task.status = 'active';
+            } else if (list.id === 'completed-list') {
+                task.status = 'completed';
+            }
+
+            saveData();
+            renderTasks();
+        }
+
         // Goals management
         function addGoal() {
             const goalText = document.getElementById('goal-input').value;
@@ -709,7 +1028,6 @@
                 return;
             }
 
-            // Parse timeframe and goal text
             const [timeframe, ...goalArray] = goalText.split(':');
             if (!goalArray.length) {
                 alert('Please enter a timeframe and a goal separated by a colon (e.g., "Daily: Exercise").');
@@ -745,20 +1063,18 @@
 
             const totalScrollDistance = containerWidth + contentWidth;
 
-            // Set CSS variables
             const root = document.documentElement;
             root.style.setProperty('--goals-scroll-start', containerWidth + 'px');
             root.style.setProperty('--goals-scroll-end', -contentWidth + 'px');
 
-            // Calculate duration based on speed
-            const speed = 30; // pixels per second
+            const speed = 50; // pixels per second
             const duration = totalScrollDistance / speed;
 
-            // Set animation duration
             goalContainer.style.animationDuration = duration + 's';
         }
 
         function openGoalsModal() {
+            if (viewingSharedDo) return; // Prevent editing when viewing shared do.
             const goalsList = document.getElementById('goals-list');
             goalsList.innerHTML = '';
 
@@ -799,13 +1115,25 @@
         // Vision and Purpose
         function saveVision() {
             const vision = document.getElementById('vision-text').innerText;
-            localStorage.setItem('vision', vision);
+            if (currentUser) {
+                localStorage.setItem(currentUser + '_vision', vision);
+            } else {
+                localStorage.setItem('guest_vision', vision);
+            }
         }
 
         function loadVision() {
-            const vision = localStorage.getItem('vision');
+            let vision;
+            if (currentUser) {
+                vision = localStorage.getItem(currentUser + '_vision');
+            } else {
+                vision = localStorage.getItem('guest_vision');
+            }
+
             if (vision) {
                 document.getElementById('vision-text').innerText = vision;
+            } else {
+                document.getElementById('vision-text').innerText = 'Your purpose here';
             }
         }
 
@@ -919,78 +1247,21 @@
 
             const totalScrollDistance = containerWidth + contentWidth;
 
-            // Set CSS variables
             const root = document.documentElement;
             root.style.setProperty('--stats-scroll-start', containerWidth + 'px');
             root.style.setProperty('--stats-scroll-end', -contentWidth + 'px');
 
-            // Calculate duration based on speed
             const speed = 50; // pixels per second
             const duration = totalScrollDistance / speed;
 
-            // Set animation duration
             statsContainer.style.animationDuration = duration + 's';
-        }
-
-        // Drag and Drop Functions
-        let draggedTaskId = null;
-
-        function dragStart(event) {
-            draggedTaskId = event.target.dataset.id;
-            event.target.style.opacity = 0.5;
-        }
-
-        function dragEnd(event) {
-            event.target.style.opacity = "";
-        }
-
-        const columns = document.querySelectorAll('.task-list');
-        columns.forEach(column => {
-            column.addEventListener('dragover', dragOver);
-            column.addEventListener('dragenter', dragEnter);
-            column.addEventListener('dragleave', dragLeave);
-            column.addEventListener('drop', drop);
-        });
-
-        function dragOver(event) {
-            event.preventDefault();
-        }
-
-        function dragEnter(event) {
-            event.preventDefault();
-            event.target.classList.add('over');
-        }
-
-        function dragLeave(event) {
-            event.target.classList.remove('over');
-        }
-
-        function drop(event) {
-            event.target.classList.remove('over');
-            const columnId = event.target.id;
-
-            const task = tasks.flat().find(t => t.id == draggedTaskId);
-
-            if (columnId === 'todo-list') {
-                updateTaskStatus(task, 'todo');
-            } else if (columnId === 'active-list') {
-                updateTaskStatus(task, 'active');
-            } else if (columnId === 'completed-list') {
-                updateTaskStatus(task, 'completed');
-            }
-
-            saveData(); // Save tasks to LocalStorage
-            renderTasks();
-        }
-
-        function updateTaskStatus(task, newStatus) {
-            task.status = newStatus;
         }
 
         // Task Editing
         function openTaskModal(taskId) {
+            if (viewingSharedDo) return; // Prevent editing when viewing shared do.
             editingTaskId = taskId;
-            const task = tasks.flat().find(t => t.id == taskId);
+            const task = tasks.find(t => t.id == taskId);
 
             document.getElementById('edit-task-title').value = task.title;
             document.getElementById('edit-task-date').value = task.date;
@@ -1006,7 +1277,7 @@
         }
 
         function saveTaskEdits() {
-            const task = tasks.flat().find(t => t.id == editingTaskId);
+            const task = tasks.find(t => t.id == editingTaskId);
 
             task.title = document.getElementById('edit-task-title').value;
             task.date = document.getElementById('edit-task-date').value;
@@ -1019,7 +1290,7 @@
         }
 
         function deleteTask(taskId) {
-            tasks = tasks.filter(task => task.id !== taskId);
+            tasks = tasks.filter(task => task.id != taskId);
             saveData(); // Save tasks to LocalStorage
             closeTaskModal();
             renderTasks();
@@ -1027,39 +1298,54 @@
 
         // Close the modals when clicking outside of them
         window.onclick = function(event) {
-            const taskModal = document.getElementById('task-modal');
-            const goalsModal = document.getElementById('goals-modal');
-            if (event.target == taskModal) {
-                closeTaskModal();
-            }
-            if (event.target == goalsModal) {
-                closeGoalsModal();
-            }
+            const modals = ['task-modal', 'goals-modal', 'login-modal', 'register-modal', 'verification-modal', 'share-modal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
         }
 
         // LocalStorage Functions
         function saveData() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            localStorage.setItem('goals', JSON.stringify(goals));
-            const vision = document.getElementById('vision-text').innerText;
-            localStorage.setItem('vision', vision);
+            const data = {
+                tasks: tasks,
+                goals: goals,
+                vision: document.getElementById('vision-text').innerText
+            };
+            if (currentUser) {
+                localStorage.setItem(currentUser + '_data', JSON.stringify(data));
+                updateSharedData();
+            } else {
+                localStorage.setItem('guest_data', JSON.stringify(data));
+            }
         }
 
         function loadData() {
-            const storedTasks = localStorage.getItem('tasks');
-            const storedGoals = localStorage.getItem('goals');
+            let storedData;
 
-            if (storedTasks) {
-                tasks = JSON.parse(storedTasks);
+            if (currentUser) {
+                storedData = localStorage.getItem(currentUser + '_data');
+            } else {
+                storedData = localStorage.getItem('guest_data');
             }
 
-            if (storedGoals) {
-                goals = JSON.parse(storedGoals);
+            if (storedData) {
+                const data = JSON.parse(storedData);
+                tasks = data.tasks || [];
+                goals = data.goals || [];
+                document.getElementById('vision-text').innerText = data.vision || 'Your purpose here';
+            } else {
+                tasks = [];
+                goals = [];
+                document.getElementById('vision-text').innerText = 'Your purpose here';
             }
 
-            loadVision();
             renderTasks();
             renderGoals();
+            updateHabitStreaks();
+            updateFunStats();
         }
 
         // Backup and Import Functions
@@ -1067,7 +1353,7 @@
             const data = {
                 tasks: tasks,
                 goals: goals,
-                vision: localStorage.getItem('vision') || ''
+                vision: document.getElementById('vision-text').innerText
             };
             const dataStr = JSON.stringify(data, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1075,7 +1361,7 @@
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'do_backup.json';
+            a.download = 'do_backup_' + (currentUser || 'guest') + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -1093,9 +1379,8 @@
                     if (data.tasks && data.goals) {
                         tasks = data.tasks;
                         goals = data.goals;
-                        if (data.vision) {
-                            localStorage.setItem('vision', data.vision);
-                        }
+                        document.getElementById('vision-text').innerText = data.vision || 'Your purpose here';
+
                         saveData();
                         loadData();
                         alert('Data imported successfully.');
@@ -1109,6 +1394,283 @@
             reader.readAsText(file);
             // Reset the file input
             event.target.value = '';
+        }
+
+        // Authentication Functions
+        function checkAuthStatus() {
+            currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                document.getElementById('logout-button').style.display = 'block';
+                document.getElementById('auth-buttons').style.display = 'none';
+            } else {
+                document.getElementById('logout-button').style.display = 'none';
+                document.getElementById('auth-buttons').style.display = 'block';
+            }
+            viewingSharedDo = false;
+            viewedUser = null;
+            document.getElementById('page-title').innerText = 'do.';
+            document.getElementById('vision-text').contentEditable = !viewingSharedDo;
+            document.getElementById('exit-shared-do-button').style.display = 'none';
+            loadData();
+        }
+
+        function openLoginModal() {
+            document.getElementById('login-error-message').innerText = '';
+            document.getElementById('login-modal').style.display = 'block';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        function openRegisterModal() {
+            document.getElementById('register-error-message').innerText = '';
+            document.getElementById('register-modal').style.display = 'block';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('register-modal').style.display = 'none';
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            const storedUser = JSON.parse(localStorage.getItem('user_' + username));
+            if (storedUser && storedUser.password === password) {
+                currentUser = username;
+                localStorage.setItem('currentUser', currentUser);
+                closeLoginModal();
+                checkAuthStatus();
+                document.getElementById('login-error-message').innerText = '';
+            } else {
+                document.getElementById('login-error-message').innerText = 'Invalid username or password.';
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('register-username').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+
+            if (!username || !email || !password) {
+                document.getElementById('register-error-message').innerText = 'All fields are required.';
+                return;
+            }
+
+            const userExists = localStorage.getItem('user_' + username);
+            if (userExists) {
+                document.getElementById('register-error-message').innerText = 'Username already exists. Please choose another one.';
+            } else {
+                // Simulate sending a verification email
+                verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+                // Display the code inline for simulation purposes
+                document.getElementById('displayed-verification-code').innerText = verificationCode;
+
+                pendingUser = {
+                    username: username,
+                    password: password,
+                    email: email
+                };
+
+                closeRegisterModal();
+                openVerificationModal();
+            }
+        }
+
+        function openVerificationModal() {
+            document.getElementById('verification-error-message').innerText = '';
+            document.getElementById('verification-modal').style.display = 'block';
+        }
+
+        function closeVerificationModal() {
+            document.getElementById('verification-modal').style.display = 'none';
+            pendingUser = null;
+            verificationCode = null;
+        }
+
+        function verifyEmail() {
+            const enteredCode = document.getElementById('verification-code-input').value.trim();
+            if (enteredCode === verificationCode) {
+                // Save the user
+                localStorage.setItem('user_' + pendingUser.username, JSON.stringify({
+                    password: pendingUser.password,
+                    email: pendingUser.email
+                }));
+                currentUser = pendingUser.username;
+                localStorage.setItem('currentUser', currentUser);
+                closeVerificationModal();
+                checkAuthStatus();
+            } else {
+                document.getElementById('verification-error-message').innerText = 'Incorrect verification code.';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            checkAuthStatus();
+        }
+
+        // Sharing Functionality
+        function openShareModal() {
+            document.getElementById('share-error-message').innerText = '';
+            document.getElementById('share-success-message').innerText = '';
+            document.getElementById('share-username').value = '';
+
+            // Populate the list of do.s shared with the user
+            const sharedWithYouList = document.getElementById('shared-with-you-list');
+            sharedWithYouList.innerHTML = '';
+
+            const sharedWithYou = getSharedWithYou();
+            if (sharedWithYou.length > 0) {
+                sharedWithYou.forEach(username => {
+                    const listItem = document.createElement('li');
+                    const userNameSpan = document.createElement('span');
+                    userNameSpan.innerText = username;
+                    const viewButton = document.createElement('button');
+                    viewButton.innerText = 'View';
+                    viewButton.className = 'minimal-button';
+                    viewButton.style.marginLeft = '10px';
+                    viewButton.onclick = () => {
+                        viewSharedDo(username);
+                        closeShareModal();
+                    };
+                    listItem.appendChild(userNameSpan);
+                    listItem.appendChild(viewButton);
+                    sharedWithYouList.appendChild(listItem);
+                });
+            } else {
+                sharedWithYouList.innerHTML = '<li>No do.s shared with you.</li>';
+            }
+
+            // Show or hide the 'Exit Shared do.' button
+            const exitSharedDoButton = document.getElementById('exit-shared-do-button');
+            if (viewingSharedDo) {
+                exitSharedDoButton.style.display = 'block';
+            } else {
+                exitSharedDoButton.style.display = 'none';
+            }
+
+            document.getElementById('share-modal').style.display = 'block';
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').style.display = 'none';
+        }
+
+        function shareDo() {
+            if (!currentUser) {
+                document.getElementById('share-error-message').innerText = 'Please login to share your do.';
+                return;
+            }
+
+            const shareUsername = document.getElementById('share-username').value.trim();
+            if (!shareUsername) {
+                document.getElementById('share-error-message').innerText = 'Please enter a username.';
+                return;
+            }
+
+            if (shareUsername === currentUser) {
+                document.getElementById('share-error-message').innerText = 'You cannot share with yourself.';
+                return;
+            }
+
+            const userExists = localStorage.getItem('user_' + shareUsername);
+            if (!userExists) {
+                document.getElementById('share-error-message').innerText = 'User does not exist.';
+                return;
+            }
+
+            // Simulate sharing by saving data under a shared key
+            const data = {
+                tasks: tasks,
+                goals: goals,
+                vision: document.getElementById('vision-text').innerText
+            };
+
+            localStorage.setItem('shared_from_' + currentUser + '_to_' + shareUsername, JSON.stringify(data));
+            document.getElementById('share-error-message').innerText = '';
+            document.getElementById('share-success-message').innerText = 'Your do. has been shared successfully!';
+        }
+
+        function getSharedWithYou() {
+            const sharedWithYou = [];
+            const prefix = 'shared_from_';
+            const suffix = '_to_' + (currentUser || 'guest');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith(prefix) && key.endsWith(suffix)) {
+                    const sharedFromUser = key.substring(prefix.length, key.length - suffix.length);
+                    sharedWithYou.push(sharedFromUser);
+                }
+            }
+            return sharedWithYou;
+        }
+
+        function viewSharedDo(username) {
+            if (!username) {
+                alert('Username not specified.');
+                return;
+            }
+
+            if (username === currentUser) {
+                alert('You are already viewing your own do.');
+                return;
+            }
+
+            const sharedDataKey = 'shared_from_' + username + '_to_' + (currentUser || 'guest');
+            const sharedData = localStorage.getItem(sharedDataKey);
+
+            if (!sharedData) {
+                alert(`${username} has not shared their do. with you.`);
+                return;
+            }
+
+            const data = JSON.parse(sharedData);
+            tasks = data.tasks || [];
+            goals = data.goals || [];
+            if (data.vision) {
+                document.getElementById('vision-text').innerText = data.vision;
+            } else {
+                document.getElementById('vision-text').innerText = 'Their purpose here';
+            }
+
+            viewingSharedDo = true;
+            viewedUser = username;
+            document.getElementById('page-title').innerText = `${username}'s do.`;
+            document.getElementById('vision-text').contentEditable = false;
+            document.getElementById('exit-shared-do-button').style.display = 'block';
+            renderTasks();
+            renderGoals();
+        }
+
+        function exitSharedDo() {
+            if (viewingSharedDo) {
+                viewingSharedDo = false;
+                viewedUser = null;
+                document.getElementById('page-title').innerText = 'do.';
+                document.getElementById('vision-text').contentEditable = true;
+                document.getElementById('exit-shared-do-button').style.display = 'none';
+                loadData();
+                renderTasks();
+                renderGoals();
+            }
+        }
+
+        function updateSharedData() {
+            // Update the shared data when tasks or goals change
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('shared_from_' + currentUser + '_to_')) {
+                    const data = {
+                        tasks: tasks,
+                        goals: goals,
+                        vision: document.getElementById('vision-text').innerText
+                    };
+                    localStorage.setItem(key, JSON.stringify(data));
+                }
+            }
         }
 
     </script>
