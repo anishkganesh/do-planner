@@ -41,8 +41,8 @@ The task-processing helpers, including `simulateLLMProcessing`, use local heuris
 ## Run locally
 
 ```bash
-git clone https://github.com/anishkganesh/do..git
-cd do.
+git clone https://github.com/anishkganesh/do-planner.git
+cd do-planner
 python -m http.server 8000
 ```
 
