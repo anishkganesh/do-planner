@@ -1,5 +1,7 @@
 # do-planner
 
+[Demo video](https://www.youtube.com/watch?v=6HzS09Dr2x4)
+
 A browser-based lifestyle planner for tasks, goals, habits, and personal progress. The complete application lives in a single HTML file and stores its data locally in the browser.
 
 ## Overview
