@@ -1,4 +1,4 @@
-# do.
+# do-planner
 
 A browser-based lifestyle planner for tasks, goals, habits, and personal progress. The complete application lives in a single HTML file and stores its data locally in the browser.
 
